@@ -158,7 +158,7 @@ var dropdown_procedure_li = dropdown_procedure.select(".dropdown").selectAll("li
     .classed("current", function(d) { return d == USER_PROCEDURE ? true : false; })
     .text(function(d) { return css_procedures[d]; });
 dropdown_procedure_li.on("click", function(d) {
-    d3.select("#procedure span").text(races[d]);
+    d3.select("#procedure span").text(css_procedures[d]);
     d3.select(this).classed("current", true); // Hide currently selected metric from menu
     d3.select("#procedure #" + USER_PROCEDURE).classed("current", false);   // Show previously hidden
 
