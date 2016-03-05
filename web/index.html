@@ -1,97 +1,85 @@
-
 <!DOCTYPE html>
+
 <head>
-<title>Health Prediciton</title>
-<link rel="stylesheet" href="data/style.css" type="text/css" media="screen"/>
-<link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <title>Health Prediciton</title>
+    <link rel="stylesheet" href="data/style.css" type="text/css" media="screen" />
+    <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
 </head>
 <script>
-var url = (window.location != window.parent.location)
-      ? document.referrer
-      : document.location.href;
+var url = (window.location != window.parent.location) ? document.referrer : document.location.href;
 </script>
 <meta charset="utf-8">
+
 <body>
-<div id="main-wrapper">
-<div id="controls">
-<div class="sentence">I am&nbsp;</div>
-<div id="sex" class="dropdown-wrapper", tabindex="1"  style="float:left;z-index:10">
-	            <span>Sex</span>
-	            <ul class="dropdown"></ul>
-	        </div>
-
-	        <div id="race" class="dropdown-wrapper", tabindex="2"  style="float:left;z-index:9">
-	            <span>Race</span>
-	            <ul class="dropdown"></ul>
-	        </div>
-
-	        <div id="procedure" class="dropdown-wrapper", tabindex="3"  style="float:left;z-index:8">
-	            <span>Procedure</span>
-	            <ul class="dropdown"></ul>
-	        </div>
-
-			<div class="sentence">and currently</div>
-
-			<div id="age">
-	            <div id="agevalue"></div>
-	            <div id="ageslider" class="sliderholder"></div>
-			</div>
-
-			<div class="sentence">years old.</div>
-
-			<div id="speed">
-		        <div id="pausebutton" class="togglebutton">Pause</div>
-				<div class="clr"></div>
-		    </div>
-			<div class="clr"></div>
-		</div>
-
-
-
-	<div id="lives"></div>
-	<div id="counts">
-		<div id="currentage">
-			<div class="subtitle">Age of Death</div>
-			<div class="valholder"><span class="prefix"></span><span class="val"></span> years</div>
-		</div>
-		<div id="currentpctdead">
-			<div class="subtitle">Died So Far</div>
-			<div class="valholder"><span class="val"></span>%</div>
-		</div>
-		<div id="currentpctalive">
-			<div class="subtitle">Still Alive</div>
-			<div class="valholder"><span class="val"></span>%</div>
-		</div>
-		<div class="clr"></div>
-
-		<div class="subtitle">Cause of Death So Far</div>
-		<div id="barvals"></div>
-		<div id="barchart"></div>
-	</div>
-</div><!-- @end #main-wrapper -->
-
+    <div id="main-wrapper">
+        <div id="controls">
+            <div class="sentence">I am&nbsp;</div>
+            <div id="sex" class="dropdown-wrapper" , tabindex="1" style="float:left;z-index:10">
+                <span>Sex</span>
+                <ul class="dropdown"></ul>
+            </div>
+            <div id="race" class="dropdown-wrapper" , tabindex="2" style="float:left;z-index:9">
+                <span>Race</span>
+                <ul class="dropdown"></ul>
+            </div>
+            <div id="procedure" class="dropdown-wrapper" , tabindex="3" style="float:left;z-index:8">
+                <span>Procedure</span>
+                <ul class="dropdown"></ul>
+            </div>
+            <div class="sentence">and currently</div>
+            <div id="age">
+                <div id="agevalue"></div>
+                <div id="ageslider" class="sliderholder"></div>
+            </div>
+            <div class="sentence">years old.</div>
+            <div id="speed">
+                <div id="pausebutton" class="togglebutton">Pause</div>
+                <div class="clr"></div>
+            </div>
+            <div class="clr"></div>
+        </div>
+        <div id="lives"></div>
+        <div id="counts">
+            <div id="currentage">
+                <div class="subtitle">Age of Death</div>
+                <div class="valholder"><span class="prefix"></span><span class="val"></span> years</div>
+            </div>
+            <div id="currentpctdead">
+                <div class="subtitle">Died So Far</div>
+                <div class="valholder"><span class="val"></span>%</div>
+            </div>
+            <div id="currentpctalive">
+                <div class="subtitle">Still Alive</div>
+                <div class="valholder"><span class="val"></span>%</div>
+            </div>
+            <div class="clr"></div>
+            <div class="subtitle">Cause of Death So Far</div>
+            <div id="barvals"></div>
+            <div id="barchart"></div>
+        </div>
+    </div>
+</body>
+<!-- @end #main-wrapper -->
 <script src="data/d3.min.js"></script>
 <script src="data/d3.slider.js"></script>
-
-
 <script>
-var sexes = {
-	"F": "female",
-	"M": "male",
+	var sexes = {
+    "F": "female",
+    "M": "male",
 };
 
 var races = {
-	"Other Race": "Other",
-	"Black/African American": "Black",
-	"White": "White",
+    "Other_Race": "Other",
+    "Black_African_American": "Black",
+    "White": "White",
 };
 
 var css_procedures = {
-	"TRACHEOSTOMY; TEMP/PERM": "p1",
-	"PSYCHO/PSYCHI EVAL/THER": "p2",
-	"OTHER THERAPEUTIC PRCS": "p3",
-	"RESP INTUB/MECH VENTIL": "p4",
-	"NO PROC": "p5",
+    "TRACHEOSTOMY__TEMP_PERM": "p1",
+    "PSYCHO_PSYCHI_EVAL_THER": "p2",
+    "OTHER_THERAPEUTIC_PRCS": "p3",
+    "RESP_INTUB_MECH_VENTIL": "p4",
+    "NO_PROC": "p5",
 };
 
 var USER_AGE;
@@ -109,17 +97,23 @@ dropdown_sex.on("click", function() {
 });
 var dropdown_sex_li = dropdown_sex.select(".dropdown").selectAll("li")
     .data(d3.keys(sexes))
-  .enter().append("li")
-    .attr("id", function(d) { return d; })
-    .classed("current", function(d) { return d == USER_SEX ? true : false; })
-    .text(function(d) { return sexes[d]; });
+    .enter().append("li")
+    .attr("id", function(d) {
+        return d;
+    })
+    .classed("current", function(d) {
+        return d == USER_SEX ? true : false;
+    })
+    .text(function(d) {
+        return sexes[d];
+    });
 dropdown_sex_li.on("click", function(d) {
     d3.select("#sex span").text(sexes[d]);
     d3.select(this).classed("current", true); // Hide currently selected metric from menu
-    d3.select("#sex #" + USER_SEX).classed("current", false);   // Show previously hidden
+    d3.select("#sex #" + USER_SEX).classed("current", false); // Show previously hidden
 
     USER_SEX = d;
-	resetCounts();
+    resetCounts();
     update();
 });
 
@@ -131,17 +125,23 @@ dropdown_race.on("click", function() {
 });
 var dropdown_race_li = dropdown_race.select(".dropdown").selectAll("li")
     .data(d3.keys(races))
-  .enter().append("li")
-    .attr("id", function(d) { return d; })
-    .classed("current", function(d) { return d == USER_RACE ? true : false; })
-    .text(function(d) { return races[d]; });
+    .enter().append("li")
+    .attr("id", function(d) {
+        return d;
+    })
+    .classed("current", function(d) {
+        return d == USER_RACE ? true : false;
+    })
+    .text(function(d) {
+        return races[d];
+    });
 dropdown_race_li.on("click", function(d) {
     d3.select("#race span").text(races[d]);
     d3.select(this).classed("current", true); // Hide currently selected metric from menu
-    d3.select("#race #" + USER_RACE).classed("current", false);   // Show previously hidden
+    d3.select("#race #" + USER_RACE).classed("current", false); // Show previously hidden
 
     USER_RACE = d;
-	resetCounts();
+    resetCounts();
     update();
 });
 
@@ -153,21 +153,28 @@ dropdown_procedure.on("click", function() {
 });
 var dropdown_procedure_li = dropdown_procedure.select(".dropdown").selectAll("li")
     .data(d3.keys(css_procedures))
-  .enter().append("li")
-    .attr("id", function(d) { return d; })
-    .classed("current", function(d) { return d == USER_PROCEDURE ? true : false; })
-    .text(function(d) { return css_procedures[d]; });
+    .enter().append("li")
+    .attr("id", function(d) {
+        return d;
+    })
+    .classed("current", function(d) {
+        return d == USER_PROCEDURE ? true : false;
+    })
+    .text(function(d) {
+        return css_procedures[d];
+    });
 dropdown_procedure_li.on("click", function(d) {
     d3.select("#procedure span").text(css_procedures[d]);
     d3.select(this).classed("current", true); // Hide currently selected metric from menu
-    d3.select("#procedure #" + USER_PROCEDURE).classed("current", false);   // Show previously hidden
+    d3.select("#procedure #" + USER_PROCEDURE).classed("current", false); // Show previously hidden
 
     USER_PROCEDURE = d;
-	resetCounts();
+    resetCounts();
     update();
 });
 
+function update() {} // @end update()
+
+// Reset values and counters.
+function resetCounts() {} // @end resetCounts()
 </script>
-
-
-
