@@ -18,16 +18,14 @@ var url = (window.location != window.parent.location) ? document.referrer : docu
                 <span>Sex</span>
                 <ul class="dropdown"></ul>
             </div>
-            <div id="age" class="dropdown-wrapper" , tabindex="1" style="float:left;z-index:10">
-                <span>Age</span>
-                <ul class="dropdown"></ul>
-            </div>
             <div id="race" class="dropdown-wrapper" , tabindex="2" style="float:left;z-index:9">
                 <span>Race</span>
                 <ul class="dropdown"></ul>
             </div>
             <div class="sentence">Zip Code:</div>
-            <div class="sentence"><input type="text" name="zip	"></div>
+            <div class="sentence">
+                <input type="text" name="zip	">
+            </div>
             <div class="sentence">and currently</div>
             <div id="age">
                 <div id="agevalue"></div>
@@ -46,25 +44,6 @@ var url = (window.location != window.parent.location) ? document.referrer : docu
                 <span>Procedure</span>
                 <ul class="dropdown"></ul>
             </div>
-        </div>
-        <div id="lives"></div>
-        <div id="counts">
-            <div id="currentage">
-                <div class="subtitle">Age of Death</div>
-                <div class="valholder"><span class="prefix"></span><span class="val"></span> years</div>
-            </div>
-            <div id="currentpctdead">
-                <div class="subtitle">Died So Far</div>
-                <div class="valholder"><span class="val"></span>%</div>
-            </div>
-            <div id="currentpctalive">
-                <div class="subtitle">Still Alive</div>
-                <div class="valholder"><span class="val"></span>%</div>
-            </div>
-            <div class="clr"></div>
-            <div class="subtitle">Cause of Death So Far</div>
-            <div id="barvals"></div>
-            <div id="barchart"></div>
         </div>
     </div>
 </body>
@@ -91,16 +70,8 @@ var css_procedures = {
     "PHYS_THER_EXER__MANIPUL": "Out-Patient Physical Therapy Visit",
 };
 
-var ages = {
-    "_0_to_17": "0 to 17",
-    "_18_to_29": "18 to 29",
-    "_30_to_49": "30 to 49",
-    "_50_to_69": "50 to 69",
-    "_70_or_Older": "70 or Older",
-}
 
-
-var USER_AGE;
+var USER_AGE = getRandomItem([0, 4, 14, 24, 34, 49, 64, 74], [1, 7, 7, 7, 7, 7, 5, 3]);
 var USER_SEX;
 var USER_RACE;
 var USER_PROCEDURE;
@@ -135,33 +106,11 @@ dropdown_sex_li.on("click", function(d) {
     update();
 });
 
-// Age dropdown menu
-var dropdown_age = d3.select("#controls #age");
-//dropdown_age.select("span").text(ages[USER_AGE]);
-dropdown_age.on("click", function() {
-    d3.select(this).classed("active", !d3.select(this).classed("active"));
-});
-var dropdown_age_li = dropdown_age.select(".dropdown").selectAll("li")
-    .data(d3.keys(ages))
-    .enter().append("li")
-    .attr("id", function(d) {
-        return d;
-    })
-    .classed("current", function(d) {
-        return d == USER_SEX ? true : false;
-    })
-    .text(function(d) {
-        return ages[d];
-    });
-dropdown_age_li.on("click", function(d) {
-    d3.select("#age span").text(ages[d]);
-    d3.select(this).classed("current", true); // Hide currently selected metric from menu
-    d3.select("#age #" + USER_AGE).classed("current", false); // Show previously hidden
-
-    USER_AGE = d;
-    resetCounts();
-    update();
-});
+// Age slider
+var age_slider = d3.slider().min(0).max(100).ticks(0).stepValues(d3.range(0, 100)).value(USER_AGE)
+    .callback(brushed);
+d3.select("#ageslider").call(age_slider);
+d3.select("#agevalue").text(USER_AGE);
 
 // Race dropdown menu
 var dropdown_race = d3.select("#controls #race");
@@ -219,8 +168,53 @@ dropdown_procedure_li.on("click", function(d) {
     update();
 });
 
+// Pause button
+d3.select("#pausebutton").on("click", function() {
+    if (paused == true) {
+        paused = !paused;
+        d3.select(this).text("Pause");
+        setTimeout(timer, USER_SPEED);
+    } else {
+        paused = !paused;
+        d3.select(this).text("Live");
+    }
+});
+
+function brushed() {
+    USER_AGE = age_slider.value();
+    d3.select("#agevalue").text(USER_AGE);
+
+    resetCounts();
+    update();
+}
+
 function update() {} // @end update()
 
 // Reset values and counters.
 function resetCounts() {} // @end resetCounts()
+
+
+function rand(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+function getRandomItem(list, weight) {
+    // var total_weight = weight.reduce(function (prev, cur, i, arr) {
+    //     return prev + cur;
+    // });
+    var total_weight = d3.sum(weight);
+
+    var random_num = rand(0, total_weight);
+    var weight_sum = 0;
+
+
+    for (var i = 0; i < list.length; i++) {
+        weight_sum += weight[i];
+        weight_sum = +weight_sum.toFixed(2);
+
+        if (random_num <= weight_sum) {
+            return list[i];
+        }
+    }
+} // @end getRandomItem()
 </script>
