@@ -25,6 +25,11 @@ var url = (window.location != window.parent.location)
 	            <ul class="dropdown"></ul>
 	        </div>
 
+	        <div id="procedure" class="dropdown-wrapper", tabindex="3"  style="float:left;z-index:8">
+	            <span>Procedure</span>
+	            <ul class="dropdown"></ul>
+	        </div>
+
 			<div class="sentence">and currently</div>
 
 			<div id="age">
@@ -65,7 +70,6 @@ var url = (window.location != window.parent.location)
 	</div>
 </div><!-- @end #main-wrapper -->
 
-
 <script src="data/d3.min.js"></script>
 <script src="data/d3.slider.js"></script>
 
@@ -82,9 +86,18 @@ var races = {
 	"White": "White",
 };
 
+var css_procedures = {
+	"TRACHEOSTOMY; TEMP/PERM": "p1",
+	"PSYCHO/PSYCHI EVAL/THER": "p2",
+	"OTHER THERAPEUTIC PRCS": "p3",
+	"RESP INTUB/MECH VENTIL": "p4",
+	"NO PROC": "p5",
+};
+
 var USER_AGE;
 var USER_SEX;
 var USER_RACE;
+var USER_PROCEDURE;
 var USER_SPEED;
 var CURR_AGE;
 
@@ -128,6 +141,28 @@ dropdown_race_li.on("click", function(d) {
     d3.select("#race #" + USER_RACE).classed("current", false);   // Show previously hidden
 
     USER_RACE = d;
+	resetCounts();
+    update();
+});
+
+// Procedure dropdown menu
+var dropdown_procedure = d3.select("#controls #procedure");
+//dropdown_procedure.select("span").text(races[USER_PROCEDURE]);
+dropdown_procedure.on("click", function() {
+    d3.select(this).classed("active", !d3.select(this).classed("active"));
+});
+var dropdown_procedure_li = dropdown_procedure.select(".dropdown").selectAll("li")
+    .data(d3.keys(css_procedures))
+  .enter().append("li")
+    .attr("id", function(d) { return d; })
+    .classed("current", function(d) { return d == USER_PROCEDURE ? true : false; })
+    .text(function(d) { return css_procedures[d]; });
+dropdown_procedure_li.on("click", function(d) {
+    d3.select("#procedure span").text(races[d]);
+    d3.select(this).classed("current", true); // Hide currently selected metric from menu
+    d3.select("#procedure #" + USER_PROCEDURE).classed("current", false);   // Show previously hidden
+
+    USER_PROCEDURE = d;
 	resetCounts();
     update();
 });
