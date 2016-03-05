@@ -18,6 +18,10 @@ var url = (window.location != window.parent.location) ? document.referrer : docu
                 <span>Sex</span>
                 <ul class="dropdown"></ul>
             </div>
+            <div id="age" class="dropdown-wrapper" , tabindex="1" style="float:left;z-index:10">
+                <span>Age</span>
+                <ul class="dropdown"></ul>
+            </div>
             <div id="race" class="dropdown-wrapper" , tabindex="2" style="float:left;z-index:9">
                 <span>Race</span>
                 <ul class="dropdown"></ul>
@@ -63,7 +67,7 @@ var url = (window.location != window.parent.location) ? document.referrer : docu
 <script src="data/d3.min.js"></script>
 <script src="data/d3.slider.js"></script>
 <script>
-	var sexes = {
+var sexes = {
     "F": "female",
     "M": "male",
 };
@@ -75,12 +79,21 @@ var races = {
 };
 
 var css_procedures = {
-    "TRACHEOSTOMY__TEMP_PERM": "p1",
-    "PSYCHO_PSYCHI_EVAL_THER": "p2",
-    "OTHER_THERAPEUTIC_PRCS": "p3",
-    "RESP_INTUB_MECH_VENTIL": "p4",
-    "NO_PROC": "p5",
+    "HIP_REPLACEMENT_TOT_PRT": "Total Hip Replacement",
+    "SPINAL_FUSION": "Spinal Fusion",
+    "ALCO_DRUG_REHAB_DETOX": "Drug or Alcohol Rehab & Detox",
+    "ARTHROPLASTY_KNEE": "Knee Replacement",
+    "PHYS_THER_EXER__MANIPUL": "Out-Patient Physical Therapy Visit",
 };
+
+var ages = {
+    "_0_to_17": "0 to 17",
+    "_18_to_29": "18 to 29",
+    "_30_to_49": "30 to 49",
+    "_50_to_69": "50 to 69",
+    "_70_or_Older": "70 or Older",
+}
+
 
 var USER_AGE;
 var USER_SEX;
@@ -113,6 +126,34 @@ dropdown_sex_li.on("click", function(d) {
     d3.select("#sex #" + USER_SEX).classed("current", false); // Show previously hidden
 
     USER_SEX = d;
+    resetCounts();
+    update();
+});
+
+// Age dropdown menu
+var dropdown_age = d3.select("#controls #age");
+//dropdown_age.select("span").text(ages[USER_AGE]);
+dropdown_age.on("click", function() {
+    d3.select(this).classed("active", !d3.select(this).classed("active"));
+});
+var dropdown_age_li = dropdown_age.select(".dropdown").selectAll("li")
+    .data(d3.keys(ages))
+    .enter().append("li")
+    .attr("id", function(d) {
+        return d;
+    })
+    .classed("current", function(d) {
+        return d == USER_SEX ? true : false;
+    })
+    .text(function(d) {
+        return ages[d];
+    });
+dropdown_age_li.on("click", function(d) {
+    d3.select("#age span").text(ages[d]);
+    d3.select(this).classed("current", true); // Hide currently selected metric from menu
+    d3.select("#age #" + USER_AGE).classed("current", false); // Show previously hidden
+
+    USER_AGE = d;
     resetCounts();
     update();
 });
