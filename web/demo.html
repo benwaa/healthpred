@@ -56,605 +56,606 @@ var thief = false;
             <div id="barchart"></div>
         </div>
     </div>
-    <!-- @end #main-wrapper -->
-    <script src="data/d3.min.js"></script>
-    <script src="data/d3.slider.js"></script>
-    <script>
-    if (!thief) {
-        var data_loc = "data/cause-of-death-1999-2014-prepared-all.tsv";
+</body>
+<!-- @end #main-wrapper -->
+<script src="data/d3.min.js"></script>
+<script src="data/d3.slider.js"></script>
+<script>
+if (!thief) {
+    var data_loc = "data/cause-of-death-1999-2014-prepared-all.tsv";
+}
+
+var total_lives = 783,
+    deaths_so_far = 0,
+    maxp = 1,
+    reset = false,
+    life_radius = 8,
+    padding = 1,
+    default_fill = "#ccc";
+
+var paused = false;
+
+var causes_meta = {
+    "A00-B99": {
+        "name": "Infection",
+        "descrip": "Infectious and Parasitic Diseases",
+        color: "#74be34",
+        count: 0
+    },
+    "C00-D48": {
+        "name": "Cancer",
+        "descrip": "Cancer",
+        color: "#ca4471",
+        count: 0
+    },
+    "D50-D89": {
+        "name": "Blood",
+        "descrip": "Diseases of the Blood and Blood-Forming Organs",
+        color: "#ffb7c7",
+        count: 0
+    },
+    "E00-E88": {
+        "name": "Endocrine",
+        "descrip": "Endocrine, Nutritional, and Metabolic Diseases",
+        color: "#fdac51",
+        count: 0
+    },
+    "F01-F99": {
+        "name": "Mental",
+        "descrip": "Mental and Behavioral Disorders",
+        color: "#948ec2",
+        count: 0
+    },
+    "G00-G98": {
+        "name": "Nervous",
+        "descrip": "Diseases of the Nervous System",
+        color: "#f366da",
+        count: 0
+    },
+    "I00-I99": {
+        "name": "Circulatory",
+        "descrip": "Diseases of the Circulatory System",
+        color: "#8c53d3",
+        count: 0
+    },
+    "J00-J98": {
+        "name": "Respiratory",
+        "descrip": "Diseases of the Respiratory System",
+        color: "#5574f0",
+        count: 0
+    },
+    "K00-K92": {
+        "name": "Digestive",
+        "descrip": "Diseases of the Digestive System",
+        color: "#ac8f4d",
+        count: 0
+    },
+    "M00-M99": {
+        "name": "Musculoskeletal",
+        "descrip": "Diseases of the Musculoskeletal System and Connective Tissue",
+        color: "#df5d75",
+        count: 0
+    },
+    "N00-N98": {
+        "name": "Genitourinary",
+        "descrip": "Diseases of the Genitourinary System",
+        color: "#e6c800",
+        count: 0
+    },
+    "P00-P96": {
+        "name": "Perinatal",
+        "descrip": "Conditions Originating in the Perinatal Period",
+        color: "#ccebc5",
+        count: 0
+    },
+    "Q00-Q99": {
+        "name": "Congenital",
+        "descrip": "Congenital Defects",
+        color: "#08ceaf",
+        count: 0
+    },
+    "V01-Y89": {
+        "name": "External Causes",
+        "descrip": "External Causes",
+        color: "#777",
+        count: 0
+    },
+    "other": {
+        "name": "Other",
+        "descrip": "Other",
+        color: "#cccccc",
+        count: 0
     }
-
-    var total_lives = 783,
-        deaths_so_far = 0,
-        maxp = 1,
-        reset = false,
-        life_radius = 8,
-        padding = 1,
-        default_fill = "#ccc";
-
-    var paused = false;
-
-    var causes_meta = {
-        "A00-B99": {
-            "name": "Infection",
-            "descrip": "Infectious and Parasitic Diseases",
-            color: "#74be34",
-            count: 0
-        },
-        "C00-D48": {
-            "name": "Cancer",
-            "descrip": "Cancer",
-            color: "#ca4471",
-            count: 0
-        },
-        "D50-D89": {
-            "name": "Blood",
-            "descrip": "Diseases of the Blood and Blood-Forming Organs",
-            color: "#ffb7c7",
-            count: 0
-        },
-        "E00-E88": {
-            "name": "Endocrine",
-            "descrip": "Endocrine, Nutritional, and Metabolic Diseases",
-            color: "#fdac51",
-            count: 0
-        },
-        "F01-F99": {
-            "name": "Mental",
-            "descrip": "Mental and Behavioral Disorders",
-            color: "#948ec2",
-            count: 0
-        },
-        "G00-G98": {
-            "name": "Nervous",
-            "descrip": "Diseases of the Nervous System",
-            color: "#f366da",
-            count: 0
-        },
-        "I00-I99": {
-            "name": "Circulatory",
-            "descrip": "Diseases of the Circulatory System",
-            color: "#8c53d3",
-            count: 0
-        },
-        "J00-J98": {
-            "name": "Respiratory",
-            "descrip": "Diseases of the Respiratory System",
-            color: "#5574f0",
-            count: 0
-        },
-        "K00-K92": {
-            "name": "Digestive",
-            "descrip": "Diseases of the Digestive System",
-            color: "#ac8f4d",
-            count: 0
-        },
-        "M00-M99": {
-            "name": "Musculoskeletal",
-            "descrip": "Diseases of the Musculoskeletal System and Connective Tissue",
-            color: "#df5d75",
-            count: 0
-        },
-        "N00-N98": {
-            "name": "Genitourinary",
-            "descrip": "Diseases of the Genitourinary System",
-            color: "#e6c800",
-            count: 0
-        },
-        "P00-P96": {
-            "name": "Perinatal",
-            "descrip": "Conditions Originating in the Perinatal Period",
-            color: "#ccebc5",
-            count: 0
-        },
-        "Q00-Q99": {
-            "name": "Congenital",
-            "descrip": "Congenital Defects",
-            color: "#08ceaf",
-            count: 0
-        },
-        "V01-Y89": {
-            "name": "External Causes",
-            "descrip": "External Causes",
-            color: "#777",
-            count: 0
-        },
-        "other": {
-            "name": "Other",
-            "descrip": "Other",
-            color: "#cccccc",
-            count: 0
-        }
-    }
+}
 
 
-    var sexes = {
-        "F": "female",
-        "M": "male",
-    };
+var sexes = {
+    "F": "female",
+    "M": "male",
+};
 
-    var races = {
-        "asian": "Asian",
-        "black": "Black",
-        "native": "Native",
-        "white": "White",
-    };
+var races = {
+    "asian": "Asian",
+    "black": "Black",
+    "native": "Native",
+    "white": "White",
+};
 
-    var USER_AGE = getRandomItem([0, 4, 14, 24, 34, 49, 64, 74], [1, 7, 7, 7, 7, 7, 5, 3]);
-    var USER_SEX = getRandomItem(d3.keys(sexes), [1, 1]);
-    var USER_RACE = getRandomItem(d3.keys(races), [5, 13, 1, 72]);
-    var USER_SPEED = 300;
-    var CURR_AGE = USER_AGE;
+var USER_AGE = getRandomItem([0, 4, 14, 24, 34, 49, 64, 74], [1, 7, 7, 7, 7, 7, 5, 3]);
+var USER_SEX = getRandomItem(d3.keys(sexes), [1, 1]);
+var USER_RACE = getRandomItem(d3.keys(races), [5, 13, 1, 72]);
+var USER_SPEED = 300;
+var CURR_AGE = USER_AGE;
 
 
 
-    var margin = {
-            top: 0,
-            right: 5,
-            bottom: 5,
-            left: 10
-        },
-        width = 540 - margin.left - margin.right,
-        height = 600 - margin.top - margin.bottom;
+var margin = {
+        top: 0,
+        right: 5,
+        bottom: 5,
+        left: 10
+    },
+    width = 540 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
 
-    var ncol = Math.floor(width / (2 * (life_radius + padding)));
-    // var ncol = 50;
-
-
-
-    // scales and axes
-    var x = d3.scale.linear()
-        .range([0, 340])
-        .domain([0, 1]); // hard-coding this because I know the data
+var ncol = Math.floor(width / (2 * (life_radius + padding)));
+// var ncol = 50;
 
 
-    // Start the SVG lives object
-    var svg = d3.select("#lives").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// scales and axes
+var x = d3.scale.linear()
+    .range([0, 340])
+    .domain([0, 1]); // hard-coding this because I know the data
 
 
-    // Start the bar chart
-    var count = d3.select("#barchart")
-        .selectAll("div")
-        .data(d3.keys(causes_meta))
-        .enter().append("div")
+// Start the SVG lives object
+var svg = d3.select("#lives").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+// Start the bar chart
+var count = d3.select("#barchart")
+    .selectAll("div")
+    .data(d3.keys(causes_meta))
+    .enter().append("div")
+    .attr("id", function(d) {
+        return d;
+    })
+    .attr("class", "count");
+
+count.append("div")
+    .attr("class", "bar")
+    .style("width", function(d) {
+        return 10 * causes_meta[d]['count'] + "px";
+    })
+    .style("background", function(d) {
+        return causes_meta[d]['color'];
+    });
+
+count.append("div")
+    .attr("class", "countlabel")
+    .text(function(d) {
+        return causes_meta[d]['name'];
+    });
+
+// Bar chart tickers
+var cause_ticker = d3.select("#barvals")
+    .selectAll("div")
+    .data(d3.keys(causes_meta))
+    .enter().append("div")
+    .attr("id", function(d) {
+        return d + "val";
+    })
+    .attr("class", "val")
+    .text("0%");
+
+
+var age_probs = {};
+d3.tsv(data_loc, type, function(error, death) {
+
+    // Sex dropdown menu
+    var dropdown_sex = d3.select("#controls #sex");
+    dropdown_sex.select("span").text(sexes[USER_SEX]);
+    dropdown_sex.on("click", function() {
+        d3.select(this).classed("active", !d3.select(this).classed("active"));
+    });
+    var dropdown_sex_li = dropdown_sex.select(".dropdown").selectAll("li")
+        .data(d3.keys(sexes))
+        .enter().append("li")
         .attr("id", function(d) {
             return d;
         })
-        .attr("class", "count");
-
-    count.append("div")
-        .attr("class", "bar")
-        .style("width", function(d) {
-            return 10 * causes_meta[d]['count'] + "px";
+        .classed("current", function(d) {
+            return d == USER_SEX ? true : false;
         })
-        .style("background", function(d) {
-            return causes_meta[d]['color'];
-        });
-
-    count.append("div")
-        .attr("class", "countlabel")
         .text(function(d) {
-            return causes_meta[d]['name'];
+            return sexes[d];
         });
+    dropdown_sex_li.on("click", function(d) {
+        d3.select("#sex span").text(sexes[d]);
+        d3.select(this).classed("current", true); // Hide currently selected metric from menu
+        d3.select("#sex #" + USER_SEX).classed("current", false); // Show previously hidden 
 
-    // Bar chart tickers
-    var cause_ticker = d3.select("#barvals")
-        .selectAll("div")
-        .data(d3.keys(causes_meta))
-        .enter().append("div")
+        USER_SEX = d;
+        resetCounts();
+        update();
+    });
+
+
+    // Race dropdown menu
+    var dropdown_race = d3.select("#controls #race");
+    dropdown_race.select("span").text(races[USER_RACE]);
+    dropdown_race.on("click", function() {
+        d3.select(this).classed("active", !d3.select(this).classed("active"));
+    });
+    var dropdown_race_li = dropdown_race.select(".dropdown").selectAll("li")
+        .data(d3.keys(races))
+        .enter().append("li")
         .attr("id", function(d) {
-            return d + "val";
+            return d;
         })
-        .attr("class", "val")
-        .text("0%");
-
-
-    var age_probs = {};
-    d3.tsv(data_loc, type, function(error, death) {
-
-        // Sex dropdown menu
-        var dropdown_sex = d3.select("#controls #sex");
-        dropdown_sex.select("span").text(sexes[USER_SEX]);
-        dropdown_sex.on("click", function() {
-            d3.select(this).classed("active", !d3.select(this).classed("active"));
+        .classed("current", function(d) {
+            return d == USER_RACE ? true : false;
+        })
+        .text(function(d) {
+            return races[d];
         });
-        var dropdown_sex_li = dropdown_sex.select(".dropdown").selectAll("li")
-            .data(d3.keys(sexes))
-            .enter().append("li")
-            .attr("id", function(d) {
-                return d;
-            })
-            .classed("current", function(d) {
-                return d == USER_SEX ? true : false;
-            })
-            .text(function(d) {
-                return sexes[d];
-            });
-        dropdown_sex_li.on("click", function(d) {
-            d3.select("#sex span").text(sexes[d]);
-            d3.select(this).classed("current", true); // Hide currently selected metric from menu
-            d3.select("#sex #" + USER_SEX).classed("current", false); // Show previously hidden 
+    dropdown_race_li.on("click", function(d) {
+        d3.select("#race span").text(races[d]);
+        d3.select(this).classed("current", true); // Hide currently selected metric from menu
+        d3.select("#race #" + USER_RACE).classed("current", false); // Show previously hidden 
 
-            USER_SEX = d;
-            resetCounts();
-            update();
-        });
+        USER_RACE = d;
+        resetCounts();
+        update();
+    });
 
+    // Age slider
+    var age_slider = d3.slider().min(0).max(100).ticks(0).stepValues(d3.range(0, 100)).value(USER_AGE)
+        .callback(brushed);
+    d3.select("#ageslider").call(age_slider);
+    d3.select("#agevalue").text(USER_AGE);
 
-        // Race dropdown menu
-        var dropdown_race = d3.select("#controls #race");
-        dropdown_race.select("span").text(races[USER_RACE]);
-        dropdown_race.on("click", function() {
-            d3.select(this).classed("active", !d3.select(this).classed("active"));
-        });
-        var dropdown_race_li = dropdown_race.select(".dropdown").selectAll("li")
-            .data(d3.keys(races))
-            .enter().append("li")
-            .attr("id", function(d) {
-                return d;
-            })
-            .classed("current", function(d) {
-                return d == USER_RACE ? true : false;
-            })
-            .text(function(d) {
-                return races[d];
-            });
-        dropdown_race_li.on("click", function(d) {
-            d3.select("#race span").text(races[d]);
-            d3.select(this).classed("current", true); // Hide currently selected metric from menu
-            d3.select("#race #" + USER_RACE).classed("current", false); // Show previously hidden 
-
-            USER_RACE = d;
-            resetCounts();
-            update();
-        });
-
-        // Age slider
-        var age_slider = d3.slider().min(0).max(100).ticks(0).stepValues(d3.range(0, 100)).value(USER_AGE)
-            .callback(brushed);
-        d3.select("#ageslider").call(age_slider);
-        d3.select("#agevalue").text(USER_AGE);
-
-        // Pause button
-        d3.select("#pausebutton").on("click", function() {
-            if (paused == true) {
-                paused = !paused;
-                d3.select(this).text("Pause");
-                setTimeout(timer, USER_SPEED);
-            } else {
-                paused = !paused;
-                d3.select(this).text("Live");
-            }
-        });
-
-
-        d3.keys(races).forEach(function(d) {
-            age_probs[d] = d3.range(0, 101).map(function(i) {
-                return {
-                    "M": {
-                        'causes': [],
-                        'deaths': [],
-                        'probs': []
-                    },
-                    "F": {
-                        'causes': [],
-                        'deaths': [],
-                        'probs': []
-                    }
-                };
-            });
-        });
-
-        death.forEach(function(d, i) {
-            age_probs[d.race][d.age][d.gender]['causes'].push(d.icdcode);
-            age_probs[d.race][d.age][d.gender]['probs'].push(d.rate100k);
-            age_probs[d.race][d.age][d.gender]['deaths'].push(d.deaths);
-        });
-
-        var lives = d3.range(0, total_lives).map(function(i) {
-            return {
-                "age": USER_AGE,
-                "alive": true,
-                "cause": false,
-                "marked": false
-            }
-        });
-
-
-        var life_markers = svg.selectAll(".life")
-            .data(lives)
-            .enter().append("g")
-            .attr("class", "life");
-
-        // Holders
-        life_markers.append("circle")
-            .attr("class", "lifeholder")
-            .attr("r", life_radius)
-            .style("fill", "#ffffff")
-            .style("stroke-width", "2px")
-            .style("stroke", default_fill)
-            .attr("cx", function(d, i) {
-                return (i % ncol) * 2 * (life_radius + padding);
-            })
-            .attr("cy", function(d, i) {
-                return Math.ceil((i + 1) / ncol) * 2 * (life_radius + padding);
-            });
-
-        // Filled circles
-        life_markers.append("circle")
-            .attr("class", "lifecircle")
-            .style("fill", default_fill)
-            .attr("r", 0)
-            .attr("cx", function(d, i) {
-                return (i % ncol) * 2 * (life_radius + padding);
-            })
-            .attr("cy", function(d, i) {
-                return Math.ceil((i + 1) / ncol) * 2 * (life_radius + padding);
-            })
-            .transition()
-            .duration(400)
-            .ease("cubic")
-            .attr("r", life_radius);
-
-
-        // var death_count = 0;
-
-        function timer() {
-
-            if (!paused) {
-                // Simulate one year.
-                svg.selectAll(".life")
-                    .attr("d", function(d) {
-                        if (d.alive) {
-                            d.cause = simOneYear(d.age, USER_SEX, USER_RACE, age_probs);
-                            if (d.cause == false) {
-                                d.age += 1;
-                            } else {
-                                d.alive = false;
-                                // deaths_so_far += 1;
-                                d.marked = true;
-                                causes_meta[d.cause]['count'] += 1;
-                            }
-                        }
-
-                        return d;
-                    })
-                    .classed("marked", function(d) {
-                        return d.marked;
-                    })
-                    .classed("dead", function(d) {
-                        return !d.alive;
-                    });
-
-                // Find current max.
-                maxp = d3.max(d3.keys(causes_meta), function(d) {
-                    return causes_meta[d]['count'];
-                }) / deaths_so_far;
-
-                deaths_so_far = svg.selectAll(".life.dead").size();
-
-                update();
-                CURR_AGE += 1;
-
-                // Reset
-                if (CURR_AGE > 100) {
-                    resetCounts();
-                    setTimeout(timer, USER_SPEED * 10);
-
-                } else {
-                    setTimeout(timer, USER_SPEED);
-
-                }
-
-            } // @end if !paused
-
-
+    // Pause button
+    d3.select("#pausebutton").on("click", function() {
+        if (paused == true) {
+            paused = !paused;
+            d3.select(this).text("Pause");
+            setTimeout(timer, USER_SPEED);
+        } else {
+            paused = !paused;
+            d3.select(this).text("Live");
         }
-        setTimeout(timer, USER_SPEED);
+    });
 
 
-        // Reset values and counters.
-        function resetCounts() {
+    d3.keys(races).forEach(function(d) {
+        age_probs[d] = d3.range(0, 101).map(function(i) {
+            return {
+                "M": {
+                    'causes': [],
+                    'deaths': [],
+                    'probs': []
+                },
+                "F": {
+                    'causes': [],
+                    'deaths': [],
+                    'probs': []
+                }
+            };
+        });
+    });
 
-            reset = true;
-            deaths_so_far = 0;
-            maxp = 1;
+    death.forEach(function(d, i) {
+        age_probs[d.race][d.age][d.gender]['causes'].push(d.icdcode);
+        age_probs[d.race][d.age][d.gender]['probs'].push(d.rate100k);
+        age_probs[d.race][d.age][d.gender]['deaths'].push(d.deaths);
+    });
 
-            d3.keys(causes_meta).forEach(function(d) {
-                causes_meta[d]['count'] = 0;
-            });
+    var lives = d3.range(0, total_lives).map(function(i) {
+        return {
+            "age": USER_AGE,
+            "alive": true,
+            "cause": false,
+            "marked": false
+        }
+    });
 
+
+    var life_markers = svg.selectAll(".life")
+        .data(lives)
+        .enter().append("g")
+        .attr("class", "life");
+
+    // Holders
+    life_markers.append("circle")
+        .attr("class", "lifeholder")
+        .attr("r", life_radius)
+        .style("fill", "#ffffff")
+        .style("stroke-width", "2px")
+        .style("stroke", default_fill)
+        .attr("cx", function(d, i) {
+            return (i % ncol) * 2 * (life_radius + padding);
+        })
+        .attr("cy", function(d, i) {
+            return Math.ceil((i + 1) / ncol) * 2 * (life_radius + padding);
+        });
+
+    // Filled circles
+    life_markers.append("circle")
+        .attr("class", "lifecircle")
+        .style("fill", default_fill)
+        .attr("r", 0)
+        .attr("cx", function(d, i) {
+            return (i % ncol) * 2 * (life_radius + padding);
+        })
+        .attr("cy", function(d, i) {
+            return Math.ceil((i + 1) / ncol) * 2 * (life_radius + padding);
+        })
+        .transition()
+        .duration(400)
+        .ease("cubic")
+        .attr("r", life_radius);
+
+
+    // var death_count = 0;
+
+    function timer() {
+
+        if (!paused) {
+            // Simulate one year.
             svg.selectAll(".life")
                 .attr("d", function(d) {
-                    d.age = USER_AGE;
-                    d.alive = true;
-                    d.cause = false;
-                    d.marked = false;
-                    return d;
-                });
-            CURR_AGE = USER_AGE;
-
-        }
-
-
-
-        function update() {
-
-            // Update age ticker.
-            d3.select("#currentage .val").text(CURR_AGE);
-            if (CURR_AGE == 100) {
-                d3.select("#currentage .prefix").text("+");
-            } else {
-                d3.select("#currentage .prefix").text("");
-            }
-
-
-            if (reset) {
-
-                // Make circles come back.
-                svg.selectAll(".lifeholder")
-                    .style("stroke", default_fill)
-                svg.selectAll(".lifecircle")
-                    .style("fill", default_fill)
-                    .transition()
-                    .duration(USER_SPEED - 20)
-                    .ease("cubic")
-                    .attr("r", life_radius);
-
-                // Reset bar charts to zero.
-                x.domain([0, maxp]);
-                d3.selectAll("#counts div.bar")
-                    .transition()
-                    .duration(USER_SPEED + 10)
-                    .ease("linear")
-                    .style("width", function(d) {
-                        return x(0) + "px";
-                    });
-
-                // Reset bar tickers.       
-                d3.selectAll("#counts #barvals .val").text("0%");
-
-                reset = false;
-            } else {
-
-                updatePct();
-
-                // Update circles.
-                var marked = svg.selectAll(".life.marked");
-
-                marked
-                    .select(".lifeholder")
-                    .transition()
-                    .duration(USER_SPEED - 20)
-                    .style("stroke", function(d) {
-                        return causes_meta[d.cause]["color"];
-                    })
-                    .style("fill", function(d) {
-                        return causes_meta[d.cause]["color"];
-                    });
-
-                marked
-                    .classed("marked", false)
-                    .select(".lifecircle")
-                    .transition()
-                    .duration(USER_SPEED - 20)
-                    .ease("cubic", "in")
-                    .style("fill", function(d) {
-                        return causes_meta[d.cause]["color"];
-                    })
-                    .attr("r", 0);
-
-                // Update bar charts.
-                x.domain([0, maxp]);
-                d3.selectAll("#counts div.bar")
-                    .transition()
-                    .duration(USER_SPEED + 10)
-                    .ease("linear")
-                    .style("width", function(d) {
-                        return x(causes_meta[d]['count'] / deaths_so_far) + "px";
-                    });
-
-                // Update bar tickers.
-                d3.selectAll("#counts #barvals .val")
-                    .text(function(d) {
-                        if (deaths_so_far == 0) {
-                            return "0%";
+                    if (d.alive) {
+                        d.cause = simOneYear(d.age, USER_SEX, USER_RACE, age_probs);
+                        if (d.cause == false) {
+                            d.age += 1;
                         } else {
-                            return Math.round(100 * causes_meta[d]['count'] / deaths_so_far) + "%";
+                            d.alive = false;
+                            // deaths_so_far += 1;
+                            d.marked = true;
+                            causes_meta[d.cause]['count'] += 1;
                         }
-                    });
-            }
+                    }
 
+                    return d;
+                })
+                .classed("marked", function(d) {
+                    return d.marked;
+                })
+                .classed("dead", function(d) {
+                    return !d.alive;
+                });
 
-        } // @end update()
+            // Find current max.
+            maxp = d3.max(d3.keys(causes_meta), function(d) {
+                return causes_meta[d]['count'];
+            }) / deaths_so_far;
 
+            deaths_so_far = svg.selectAll(".life.dead").size();
 
-        function updatePct() {
-            if (d3.select("#currentage .val").text() == '100') {
-                d3.select("#currentpctdead .val").text(100);
-                d3.select("#currentpctalive .val").text(0);
-            } else {
-                var new_val = Math.round(100 * deaths_so_far / total_lives);
-                d3.select("#currentpctdead .val").text(new_val);
-
-                var new_val_alive = 100 - new_val;
-                d3.select("#currentpctalive .val").text(new_val_alive);
-            }
-
-        }
-
-        function brushed() {
-            USER_AGE = age_slider.value();
-            d3.select("#agevalue").text(USER_AGE);
-
-            resetCounts();
             update();
-        }
+            CURR_AGE += 1;
 
-    }); // @end d3.csv()
+            // Reset
+            if (CURR_AGE > 100) {
+                resetCounts();
+                setTimeout(timer, USER_SPEED * 10);
 
-
-
-
-    function simOneYear(age, sex, race, age_probs) {
-        p = Math.random() * 100000;
-
-        if (age == 100) {
-            p_death = 1 * 100000;
-        } else if (age >= 85) {
-            p_death = age_probs[race][age][sex]["probs"][0];
-        } else {
-            p_death = d3.sum(age_probs[race][age][sex]["probs"]);
-        }
-
-        // Died.
-        if (p <= p_death) {
-            if (age >= 85) {
-                var cause = getRandomItem(age_probs[race][age][sex]["causes"], age_probs[race][age][sex]["deaths"]);
             } else {
-                var cause = getRandomItem(age_probs[race][age][sex]["causes"], age_probs[race][age][sex]["probs"]);
+                setTimeout(timer, USER_SPEED);
+
             }
-            return cause;
+
+        } // @end if !paused
+
+
+    }
+    setTimeout(timer, USER_SPEED);
+
+
+    // Reset values and counters.
+    function resetCounts() {
+
+        reset = true;
+        deaths_so_far = 0;
+        maxp = 1;
+
+        d3.keys(causes_meta).forEach(function(d) {
+            causes_meta[d]['count'] = 0;
+        });
+
+        svg.selectAll(".life")
+            .attr("d", function(d) {
+                d.age = USER_AGE;
+                d.alive = true;
+                d.cause = false;
+                d.marked = false;
+                return d;
+            });
+        CURR_AGE = USER_AGE;
+
+    }
+
+
+
+    function update() {
+
+        // Update age ticker.
+        d3.select("#currentage .val").text(CURR_AGE);
+        if (CURR_AGE == 100) {
+            d3.select("#currentage .prefix").text("+");
         } else {
-            return false;
+            d3.select("#currentage .prefix").text("");
+        }
+
+
+        if (reset) {
+
+            // Make circles come back.
+            svg.selectAll(".lifeholder")
+                .style("stroke", default_fill)
+            svg.selectAll(".lifecircle")
+                .style("fill", default_fill)
+                .transition()
+                .duration(USER_SPEED - 20)
+                .ease("cubic")
+                .attr("r", life_radius);
+
+            // Reset bar charts to zero.
+            x.domain([0, maxp]);
+            d3.selectAll("#counts div.bar")
+                .transition()
+                .duration(USER_SPEED + 10)
+                .ease("linear")
+                .style("width", function(d) {
+                    return x(0) + "px";
+                });
+
+            // Reset bar tickers.       
+            d3.selectAll("#counts #barvals .val").text("0%");
+
+            reset = false;
+        } else {
+
+            updatePct();
+
+            // Update circles.
+            var marked = svg.selectAll(".life.marked");
+
+            marked
+                .select(".lifeholder")
+                .transition()
+                .duration(USER_SPEED - 20)
+                .style("stroke", function(d) {
+                    return causes_meta[d.cause]["color"];
+                })
+                .style("fill", function(d) {
+                    return causes_meta[d.cause]["color"];
+                });
+
+            marked
+                .classed("marked", false)
+                .select(".lifecircle")
+                .transition()
+                .duration(USER_SPEED - 20)
+                .ease("cubic", "in")
+                .style("fill", function(d) {
+                    return causes_meta[d.cause]["color"];
+                })
+                .attr("r", 0);
+
+            // Update bar charts.
+            x.domain([0, maxp]);
+            d3.selectAll("#counts div.bar")
+                .transition()
+                .duration(USER_SPEED + 10)
+                .ease("linear")
+                .style("width", function(d) {
+                    return x(causes_meta[d]['count'] / deaths_so_far) + "px";
+                });
+
+            // Update bar tickers.
+            d3.selectAll("#counts #barvals .val")
+                .text(function(d) {
+                    if (deaths_so_far == 0) {
+                        return "0%";
+                    } else {
+                        return Math.round(100 * causes_meta[d]['count'] / deaths_so_far) + "%";
+                    }
+                });
+        }
+
+
+    } // @end update()
+
+
+    function updatePct() {
+        if (d3.select("#currentage .val").text() == '100') {
+            d3.select("#currentpctdead .val").text(100);
+            d3.select("#currentpctalive .val").text(0);
+        } else {
+            var new_val = Math.round(100 * deaths_so_far / total_lives);
+            d3.select("#currentpctdead .val").text(new_val);
+
+            var new_val_alive = 100 - new_val;
+            d3.select("#currentpctalive .val").text(new_val_alive);
+        }
+
+    }
+
+    function brushed() {
+        USER_AGE = age_slider.value();
+        d3.select("#agevalue").text(USER_AGE);
+
+        resetCounts();
+        update();
+    }
+
+}); // @end d3.csv()
+
+
+
+
+function simOneYear(age, sex, race, age_probs) {
+    p = Math.random() * 100000;
+
+    if (age == 100) {
+        p_death = 1 * 100000;
+    } else if (age >= 85) {
+        p_death = age_probs[race][age][sex]["probs"][0];
+    } else {
+        p_death = d3.sum(age_probs[race][age][sex]["probs"]);
+    }
+
+    // Died.
+    if (p <= p_death) {
+        if (age >= 85) {
+            var cause = getRandomItem(age_probs[race][age][sex]["causes"], age_probs[race][age][sex]["deaths"]);
+        } else {
+            var cause = getRandomItem(age_probs[race][age][sex]["causes"], age_probs[race][age][sex]["probs"]);
+        }
+        return cause;
+    } else {
+        return false;
+    }
+}
+
+
+function type(d) {
+    d.age = +d.age;
+    d.deaths = +d.deaths;
+    d.rate100k = +d.rate100k;
+    return d;
+}
+
+function rand(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+function getRandomItem(list, weight) {
+    // var total_weight = weight.reduce(function (prev, cur, i, arr) {
+    //     return prev + cur;
+    // });
+    var total_weight = d3.sum(weight);
+
+    var random_num = rand(0, total_weight);
+    var weight_sum = 0;
+
+
+    for (var i = 0; i < list.length; i++) {
+        weight_sum += weight[i];
+        weight_sum = +weight_sum.toFixed(2);
+
+        if (random_num <= weight_sum) {
+            return list[i];
         }
     }
 
-
-    function type(d) {
-        d.age = +d.age;
-        d.deaths = +d.deaths;
-        d.rate100k = +d.rate100k;
-        return d;
-    }
-
-    function rand(min, max) {
-        return Math.random() * (max - min) + min;
-    }
-
-    function getRandomItem(list, weight) {
-        // var total_weight = weight.reduce(function (prev, cur, i, arr) {
-        //     return prev + cur;
-        // });
-        var total_weight = d3.sum(weight);
-
-        var random_num = rand(0, total_weight);
-        var weight_sum = 0;
-
-
-        for (var i = 0; i < list.length; i++) {
-            weight_sum += weight[i];
-            weight_sum = +weight_sum.toFixed(2);
-
-            if (random_num <= weight_sum) {
-                return list[i];
-            }
-        }
-
-        // end of function
-    }
-    </script>
+    // end of function
+}
+</script>
