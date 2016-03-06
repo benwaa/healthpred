@@ -5,11 +5,6 @@
     <link rel="stylesheet" href="data/style.css" type="text/css" media="screen" />
     <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
 </head>
-<script>
-var url = (window.location != window.parent.location) ? document.referrer : document.location.href;
-
-var thief = false;
-</script>
 <meta charset="utf-8">
 
 <body>
@@ -23,6 +18,10 @@ var thief = false;
             <div id="race" class="dropdown-wrapper" , tabindex="2" style="float:left;z-index:9">
                 <span>Race</span>
                 <ul class="dropdown"></ul>
+            </div>
+            <div class="sentence">Zip Code:</div>
+            <div class="sentence">
+                <input type="text" name="zip">
             </div>
             <div class="sentence">and currently</div>
             <div id="age">
@@ -61,9 +60,8 @@ var thief = false;
 <script src="data/d3.min.js"></script>
 <script src="data/d3.slider.js"></script>
 <script>
-if (!thief) {
     var data_loc = "data/cause-of-death-1999-2014-prepared-all.tsv";
-}
+
 
 var total_lives = 783,
     deaths_so_far = 0,
