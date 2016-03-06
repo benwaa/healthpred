@@ -1,0 +1,11 @@
+Gender,Zip.Code...3.digits,CCS.Procedure.Description,APR.Severity.of.Illness.Description,Length.of.Stay,Age.Group,Race
+M,112,ALCO/DRUG REHAB/DETOX,Minor,2,30 to 49,White
+M,100,ALCO/DRUG REHAB/DETOX,Minor,9,30 to 49,Black/African American
+M,104,"HIP REPLACEMENT,TOT/PRT",Minor,5,18 to 29,White
+M,100,"HIP REPLACEMENT,TOT/PRT",Moderate,6,18 to 29,Other Race
+M,105,SPINAL FUSION,Moderate,1,18 to 29,White
+F,113,SPINAL FUSION,Moderate,3,70 or Older,Other Race
+F,100,SPINAL FUSION,Major,6,70 or Older,White
+F,103,CANCER CHEMOTHERAPY,Major,15,50 to 69,White
+F,100,CANCER CHEMOTHERAPY,Major,1,50 to 69,Black/African American
+F,100,CANCER CHEMOTHERAPY,Major,2,50 to 69,White
