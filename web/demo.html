@@ -350,7 +350,7 @@ d3.tsv(data_loc, type, function(error, data) {
                 },
                 "F": {
                     'facility': [],
-                    'cost': [] // 'causes': [], // 'datas': [], // 'probs': []
+                    'cost': []
 
                 }
             };
@@ -360,8 +360,7 @@ d3.tsv(data_loc, type, function(error, data) {
     });
 
     data.forEach(function(d, i) {
-        age_probs['white'][d["Age.Group"]]['F']['facility'].push(d["Facility.Name"]);
-        age_probs['white'][d["Age.Group"]]['F']['cost'].push(d["Total.Charges"]);
+        age_probs['white'][d["Age.Group"]]['F'][d["Facility.Name"]] = d["Total.Charges"];
     });
 
 
@@ -413,78 +412,15 @@ d3.tsv(data_loc, type, function(error, data) {
 
     function update() {
         d3.select("#currentage .val").text(CURR_AGE);
-        if (CURR_AGE == 80) {
-            d3.select("#currentage .prefix").text("+");
-        } else {
-            d3.select("#currentage .prefix").text("");
-        }
-
-        if (reset) {
-            // Reset bar charts to zero.
-            x.domain([0, maxp]);
-            d3.selectAll("#counts div.bar")
-                .transition()
-                .duration(USER_SPEED + 10)
-                .ease("linear")
-                .style("width", function(d) {
-                    return x(0) + "px";
-                });
-
-            // Reset bar tickers.
-            d3.selectAll("#counts #barvals .val").text("0%");
-
-            reset = false;
-        } else {
-
-            updatePct();
-
-            // Update bar charts.
-            x.domain([0, maxp]);
-            d3.selectAll("#counts div.bar")
-                .transition()
-                .duration(USER_SPEED + 10)
-                .ease("linear")
-                .style("width", function(d) {
-                    return x(facilities[d]['count'] / surgery_so_far) + "px";
-                });
-
-            // Update bar tickers.
-            d3.selectAll("#counts #barvals .val")
-                .text(function(d) {
-                    if (surgery_so_far == 0) {
-                        return "0%";
-                    } else {
-                        return Math.round(100 * facilities[d]['count'] / surgery_so_far) + "%";
-                    }
-                });
-        }
-    } // @end update()
-
-
-    function updateOLD() {
-
-        // Update age ticker.
-        d3.select("#currentage .val").text(CURR_AGE);
         if (CURR_AGE == 100) {
             d3.select("#currentage .prefix").text("+");
         } else {
             d3.select("#currentage .prefix").text("");
         }
 
-
         if (reset) {
-
-            // Make circles come back.
-            svg.selectAll(".lifeholder")
-                .style("stroke", default_fill)
-            svg.selectAll(".lifecircle")
-                .style("fill", default_fill)
-                .transition()
-                .duration(USER_SPEED - 20)
-                .ease("cubic")
-                .attr("r", life_radius);
-
             // Reset bar charts to zero.
+            maxp = 1;
             x.domain([0, maxp]);
             d3.selectAll("#counts div.bar")
                 .transition()
@@ -495,38 +431,21 @@ d3.tsv(data_loc, type, function(error, data) {
                 });
 
             // Reset bar tickers.
-            d3.selectAll("#counts #barvals .val").text("0%");
+            d3.selectAll("#counts #barvals .val").text("$0");
 
             reset = false;
         } else {
-
-            updatePct();
-
-            // Update circles.
-            var marked = svg.selectAll(".life.marked");
-
-            marked
-                .select(".lifeholder")
-                .transition()
-                .duration(USER_SPEED - 20)
-                .style("stroke", function(d) {
-                    return facilities[d.cause]["color"];
-                })
-                .style("fill", function(d) {
-                    return facilities[d.cause]["color"];
-                });
-
-            marked
-                .classed("marked", false)
-                .select(".lifecircle")
-                .transition()
-                .duration(USER_SPEED - 20)
-                .ease("cubic", "in")
-                .style("fill", function(d) {
-                    return facilities[d.cause]["color"];
-                })
-                .attr("r", 0);
-
+            // Get the data.
+            maxp = 1;
+            Object.getOwnPropertyNames(facilities).map(function(d) {
+                var val = age_probs['white']["_30_to_49"]['F'][d];
+                var count = 0;
+                if (val !== undefined && !isNaN(val)) {
+                     count = parseFloat(val);
+                }
+                maxp = Math.max(maxp, count);
+                facilities[d]['count'] = count;
+            });
             // Update bar charts.
             x.domain([0, maxp]);
             d3.selectAll("#counts div.bar")
@@ -534,37 +453,16 @@ d3.tsv(data_loc, type, function(error, data) {
                 .duration(USER_SPEED + 10)
                 .ease("linear")
                 .style("width", function(d) {
-                    return x(facilities[d]['count'] / surgery_so_far) + "px";
+                    return x(facilities[d]['count']) + "px";
                 });
 
             // Update bar tickers.
             d3.selectAll("#counts #barvals .val")
                 .text(function(d) {
-                    if (surgery_so_far == 0) {
-                        return "0%";
-                    } else {
-                        return Math.round(100 * facilities[d]['count'] / surgery_so_far) + "%";
-                    }
+                    return "$" + Math.round(facilities[d]['count']);
                 });
         }
-
-
-    } // @end updateOLD()
-
-
-    function updatePct() {
-        if (d3.select("#currentage .val").text() == '100') {
-            d3.select("#currentpctdead .val").text(100);
-            d3.select("#currentpctalive .val").text(0);
-        } else {
-            var new_val = Math.round(100 * surgery_so_far / total_lives);
-            d3.select("#currentpctdead .val").text(new_val);
-
-            var new_val_alive = 100 - new_val;
-            d3.select("#currentpctalive .val").text(new_val_alive);
-        }
-
-    }
+    } // @end update()
 
     function brushed() {
         USER_AGE = age_slider.value();
@@ -575,34 +473,6 @@ d3.tsv(data_loc, type, function(error, data) {
     }
 
 }); // @end d3.csv()
-
-
-
-
-function simOneYear(age, sex, race, age_probs) {
-    p = Math.random() * 100000;
-
-    if (age == 100) {
-        p_death = 1 * 100000;
-    } else if (age >= 85) {
-        p_death = age; //age_probs[race][age][sex]["probs"][0];
-    } else {
-        p_death = age; //d3.sum(age_probs[race][age][sex]["probs"]);
-    }
-
-    // Died.
-    if (p <= p_death) {
-        if (age >= 85) {
-            var cause = getRandomItem(age_probs[race][age][sex]["causes"], age_probs[race][age][sex]["deaths"]);
-        } else {
-            var cause = getRandomItem(age_probs[race][age][sex]["causes"], age_probs[race][age][sex]["probs"]);
-        }
-        return cause;
-    } else {
-        return false;
-    }
-}
-
 
 function type(d) {
     d.age = +d.age;

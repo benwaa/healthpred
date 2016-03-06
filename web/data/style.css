@@ -334,7 +334,7 @@ table {
 
 #counts {
     float: left;
-    width: 390px;
+    width: 420px;
     margin-top: 8px;
 }
 
@@ -357,13 +357,13 @@ table {
 }
 
 #barchart {
-    float: left;
+    float: right;
     width: 340px;
 }
 
 #barvals {
     float: left;
-    width: 30px;
+    width: 60px;
     color: #aaa;
     margin-top: 6px;
 }
