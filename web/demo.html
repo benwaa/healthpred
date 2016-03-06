@@ -60,7 +60,6 @@
     </div>
 </body>
 <!-- @end #main-wrapper -->
-
 <script src="data/d3.min.js"></script>
 <script src="data/d3.slider.js"></script>
 <script>
@@ -75,7 +74,7 @@ var total_lives = 783,
     padding = 1,
     default_fill = "#ccc";
 
-var paused = false;
+var paused = true;
 
 var causes_meta = {
     "A00-B99": {
@@ -183,11 +182,20 @@ var races = {
     "white": "White",
 };
 
-var USER_AGE = getRandomItem([0, 4, 14, 24, 34, 49, 64, 74], [1, 7, 7, 7, 7, 7, 5, 3]);
-var USER_SEX = getRandomItem(d3.keys(sexes), [1, 1]);
-var USER_RACE = getRandomItem(d3.keys(races), [5, 13, 1, 72]);
-var USER_SPEED = 300;
-var CURR_AGE = USER_AGE;
+var css_procedures = {
+    "HIP_REPLACEMENT_TOT_PRT": "Total Hip Replacement",
+    "SPINAL_FUSION": "Spinal Fusion",
+    "ALCO_DRUG_REHAB_DETOX": "Drug or Alcohol Rehab & Detox",
+    "ARTHROPLASTY_KNEE": "Knee Replacement",
+    "PHYS_THER_EXER__MANIPUL": "Out-Patient Physical Therapy Visit",
+};
+
+var USER_AGE = 35; // = getRandomItem([0, 4, 14, 24, 34, 49, 64, 74], [1, 7, 7, 7, 7, 7, 5, 3]);
+var USER_SEX; // = getRandomItem(d3.keys(sexes), [1, 1]);
+var USER_RACE; // = getRandomItem(d3.keys(races), [5, 13, 1, 72]);
+var USER_PROCEDURE;
+var USER_SPEED = 200;
+var CURR_AGE; // = USER_AGE;
 
 
 
@@ -261,7 +269,7 @@ d3.tsv(data_loc, type, function(error, death) {
 
     // Sex dropdown menu
     var dropdown_sex = d3.select("#controls #sex");
-    dropdown_sex.select("span").text(sexes[USER_SEX]);
+    // dropdown_sex.select("span").text(sexes[USER_SEX]);
     dropdown_sex.on("click", function() {
         d3.select(this).classed("active", !d3.select(this).classed("active"));
     });
@@ -287,10 +295,38 @@ d3.tsv(data_loc, type, function(error, death) {
         update();
     });
 
+    // Procedure dropdown menu
+    var dropdown_procedure = d3.select("#controls #procedure");
+    //dropdown_procedure.select("span").text(races[USER_PROCEDURE]);
+    dropdown_procedure.on("click", function() {
+        d3.select(this).classed("active", !d3.select(this).classed("active"));
+    });
+    var dropdown_procedure_li = dropdown_procedure.select(".dropdown").selectAll("li")
+        .data(d3.keys(css_procedures))
+        .enter().append("li")
+        .attr("id", function(d) {
+            return d;
+        })
+        .classed("current", function(d) {
+            return d == USER_PROCEDURE ? true : false;
+        })
+        .text(function(d) {
+            return css_procedures[d];
+        });
+    dropdown_procedure_li.on("click", function(d) {
+        d3.select("#procedure span").text(css_procedures[d]);
+        d3.select(this).classed("current", true); // Hide currently selected metric from menu
+        d3.select("#procedure #" + USER_PROCEDURE).classed("current", false); // Show previously hidden
+
+        USER_PROCEDURE = d;
+        resetCounts();
+        update();
+    });
+
 
     // Race dropdown menu
     var dropdown_race = d3.select("#controls #race");
-    dropdown_race.select("span").text(races[USER_RACE]);
+    // dropdown_race.select("span").text(races[USER_RACE]);
     dropdown_race.on("click", function() {
         d3.select(this).classed("active", !d3.select(this).classed("active"));
     });
